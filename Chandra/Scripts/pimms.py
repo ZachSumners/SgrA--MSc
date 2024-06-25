@@ -5,6 +5,7 @@ from astropy.table import Table
 import subprocess
 import re
 
+#Naming conventions and directories.
 observationID = 28229
 data_dir = f'/home/zach/Desktop/McGill-MSc/Chandra/data/Barycentric/{observationID}/{observationID}_sgra_2-8keV_lc300.fits'
 pimms_dir = f'/home/zach/Desktop/Software/pimms/pimms'
@@ -14,6 +15,7 @@ data_output = f'/home/zach/Desktop/McGill-MSc/Chandra/data/BB/{observationID}'
 f = fits.open(data_dir)
 table = Table(f[1].data)
 
+#Extracts fluxes from the PIMMS output.
 def extract_fluxes(file_path):
 	fluxes = []
 	with open(file_path, 'r') as file:
@@ -25,6 +27,7 @@ def extract_fluxes(file_path):
 				fluxes.append(flux_value)
 	return np.array(fluxes)
 
+#Runs conversion from counts to flux.
 def counts_to_flux(pimms_directory, script_directory, observationID, counts_np):
 	with open(f'{script_directory}/pimms_commands_chandra.txt', 'w') as f:
 		f.write("MODEL PL 2 14.2e+22\n") # See what to put here
@@ -47,29 +50,31 @@ def counts_to_flux(pimms_directory, script_directory, observationID, counts_np):
 	flux = extract_fluxes(output_file_path)
 	return flux
 
+#Find count rate of data, assuming Chandra ACIS-S headers and convert to flux.
 counts = table['NET_RATE']
 counts_np = np.array(counts)
 flux = counts_to_flux(pimms_dir, script_directory, observationID, counts_np)
 
+#Find error in count rates, assuming Chandra ACIS-S headers and convert to flux.
 counts_error = table['ERR_RATE']
 counts_error_np = np.array(counts_error)
 counts_error_np = np.nan_to_num(counts_error_np)
 flux_error = counts_to_flux(pimms_dir, script_directory, observationID, counts_error_np)
 
-luminosity = flux * 4 * np.pi * 2.523E22**2
-
+#Calculate luminosity of the flux assuming SgrA*. If different object, change r and u(r). Distance/error from Haggard, 2019.
 r = 2.532E22
 ur = 2.16E20
+luminosity = flux * 4 * np.pi * r**2
 luminosity_error = abs(luminosity*np.sqrt((flux_error/flux)**2 + (ur/r)**2)) #According to the CompleteBB script.
 
+#The MJD time conversion. Needs some "zeropoint" times to convert. Assuming Chandra ACIS-S header types.
 mjdref = f[0].header['mjdref']
 timezero = f[0].header['timezero']
 
 time = table['TIME']
 utc_time = mjdref + (timezero + time)/86400
 
-print(np.mean(luminosity))
-
+#Add these conversions to the table by first creating a new table then combining them. If you wanted to add them to the original you have to respecify all the column names.
 table.add_column(utc_time, index=4, name='TIME_MJD')
 table.add_column(flux, index=22, name='FLUX')
 table.add_column(flux_error, index=23, name='FLUX_ERR')
