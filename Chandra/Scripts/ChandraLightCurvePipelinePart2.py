@@ -14,6 +14,7 @@ observationID = 28232
 chipID = 7
 repro_wd = f'/home/zach/Desktop/McGill-MSc/Chandra/data/Barycentric/{observationID}'
 
+#All just terminal commands from the guide to analyzing flares document. 
 subprocess.call('punlearn dmextract', shell=True, cwd=repro_wd)
 subprocess.call(f'pset dmextract infile="acisf{observationID}_bary_evt2.fits[ccd_id={chipID}, energy=2000:8000,sky=region(sgra.reg)][bin time=::300]"', shell=True, cwd=repro_wd)
 subprocess.call(f'pset dmextract outfile="{observationID}_sgra_2-8keV_lc300.fits"', shell=True, cwd=repro_wd)
@@ -27,7 +28,7 @@ subprocess.call(f'pset dmcopy outfile="{observationID}_sgra_2-8keV_evt.fits"', s
 subprocess.call('pset dmcopy option="all"', shell=True, cwd=repro_wd)
 subprocess.call('dmcopy', shell=True, cwd=repro_wd)
 
-#Plots the light curve
+#Plots the light curve - Commented out right now because I was plotting elsewhere with Bayesian Blocks.
 #tab = read_file(f"{repro_wd}/{observationID}_sgra_2-8keV_lc300.fits")
 
 
