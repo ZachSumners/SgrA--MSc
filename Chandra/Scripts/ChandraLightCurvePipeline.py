@@ -15,6 +15,7 @@ subprocess.call('chandra_repro', shell=True, cwd=wd)
 #Change here
 repro_wd = f'/home/zach/Desktop/McGill-MSc/Chandra/data/{observationID}/repro'
 
+#All below are just terminal commands that are from the "Guide to analyzing flares" document.
 subprocess.call('punlearn dmcopy', shell=True, cwd=repro_wd)
 subprocess.call(f'dmcopy infile="acisf{observationID}_repro_evt2.fits[EVENTS][bin x=3992.71:4174.71:1,y=3991.24:4173.24:1][energy=2000:8000]" outfile="{observationID}_repro_2-8keV_cropped.fits" clobber=yes', shell=True, cwd=repro_wd)
 subprocess.call('punlearn mkpsfmap', shell=True, cwd=repro_wd)
